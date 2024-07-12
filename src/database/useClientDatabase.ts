@@ -99,24 +99,28 @@ export async function useClientDatabase() {
     }
   }
 
-  async function generatePdf(id: number) {
+  async function getAnimalsAndBudgets(id: number) {
     try {
-      const query = "SELECT * FROM animals WHERE client_id = ?";
-      const response = await database.getAllAsync<AnimalDatabase>(query, id);
+      const queryAnimal = "SELECT * FROM animals WHERE client_id = ?";
+      const responseAnimal = await database.getAllAsync<AnimalDatabase>(queryAnimal, id);
 
-      if (response) {
-        for (const animal of response) {
+      const queryClient = "SELECT * FROM clients WHERE id = ?";
+      const reponseClient = await database.getAllAsync<ClientDatabase>(queryClient, id);
+
+      console.log(queryAnimal)
+      console.log(queryClient)
+
+      if (responseAnimal) {
+        for (const animal of responseAnimal) {
           const budgetQuery = "SELECT * FROM budget WHERE animal_id = ?";
           const budgetResponse = await database.getAllAsync<BudgetDatabase>(
             budgetQuery,
             animal.idAnimal
           );
 
-          console.log(
-            `Budget para o animal ${animal.idAnimal}:`,
-            budgetResponse
-          );
-          
+          console.log(budgetResponse)
+
+          return ({ responseAnimal, budgetResponse, reponseClient })
         }
       }
     } catch (error) {
@@ -124,7 +128,7 @@ export async function useClientDatabase() {
     }
   }
 
-  return { create, searchByName, update, remove, show, generatePdf };
+  return { create, searchByName, update, remove, show, getAnimalsAndBudgets };
 }
 
 export async function useAnimalDatabase() {
@@ -205,12 +209,35 @@ export async function useAnimalDatabase() {
     }
   }
 
+  async function searchAnimalsByIdClient(client_id: number) {
+    try {
+      const query = "SELECT * FROM animals WHERE client_id = ?";
+      const response = await database.getAllAsync<AnimalDatabase>(
+        query,
+        client_id
+      )
+
+      const detailsWithIndex = {
+        data: response.map((animal) => ({
+          client_id: animal.client_id,
+          idAnimal: animal.idAnimal,
+          name: animal.name,
+        })),
+      };
+
+      return detailsWithIndex;
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     createAnimal,
     searchAnimalByName,
     updateAnimal,
     removeAnimal,
     showAnimals,
+    searchAnimalsByIdClient
   };
 }
 
@@ -302,29 +329,35 @@ export async function useBudgetDatabase() {
     }
   }
 
+  async function searchBudgetByIdAnimal(animal_id: number) {
+    try {
+      const query = "SELECT * FROM budget WHERE animal_id = ?";
+      const response = await database.getAllAsync<BudgetDatabase>(
+        query,
+        animal_id
+      )
+
+      const detailsWithIndex = {
+        data: response.map((budget) => ({
+          date: budget.date,
+          description: budget.description,
+          value: budget.value,
+          amountPaid: budget.amountPaid,
+        })),
+      };
+
+      return detailsWithIndex;
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     createBudget,
     updateBudget,
     removeBudget,
     showBudget,
     searchBudgetByDescription,
+    searchBudgetByIdAnimal
   };
-}
-
-export async function getDataToPdf() {
-  const database = useSQLiteContext();
-
-  async function generatePdf(client_id: number) {
-    try {
-      const query = "SELECT * FROM animals WHERE client_id = ?";
-      const response = await database.getAllAsync<AnimalDatabase>(
-        query,
-        client_id
-      );
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  return { generatePdf };
 }

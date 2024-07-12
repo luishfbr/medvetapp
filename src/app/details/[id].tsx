@@ -2,19 +2,24 @@ import { useEffect, useState } from "react";
 import { Alert, View, Text, FlatList, Pressable } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import AppButton from "@/app/components/Button";
 import { Animal } from "@/app/components/Animal";
 import { Input } from "@/app/components/Input";
 
+import AppButton from "@/app/components/Button";
 import ConfirmationModal from "@/app/components/popups/ConfirmationModal";
 import DeleteModal from "@/app/components/popups/DeleteModal";
 
 import {
   AnimalDatabase,
+  BudgetDatabase,
   ClientDatabase,
   useAnimalDatabase,
+  useBudgetDatabase,
   useClientDatabase,
 } from "@/database/useClientDatabase";
+
+import { printToFileAsync } from "expo-print"
+import { shareAsync } from 'expo-sharing'
 
 import styles from "@/app/styles/style";
 
@@ -23,17 +28,20 @@ export default function Details() {
   const [name, setName] = useState("");
   const [animals, setAnimals] = useState<AnimalDatabase[]>([]);
   const [client, setClient] = useState<ClientDatabase | null>(null);
+
   const [search, setSearch] = useState("");
 
   const { id } = useLocalSearchParams();
-  const client_id = { id };
   const clientDatabase = useClientDatabase();
   const animalDatabase = useAnimalDatabase();
+  const budgetDatabase = useBudgetDatabase();
   const router = useRouter();
 
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<number | null>(null);
+
+
 
   async function fetchClientDetails() {
     try {
@@ -46,11 +54,36 @@ export default function Details() {
 
   async function createPdf() {
     try {
-      // Assuming generatePdf is a method of clientDatabase or animalDatabase
-      const relatorioPdf = await (await clientDatabase).generatePdf(Number(id));
-      Alert.alert("PDF gerado com sucesso");
+      const client = await (await clientDatabase).show(Number(id));
+
+      if (!client) {
+        throw new Error(`Cliente com ID ${id} não encontrado.`);
+      }
+
+      const client_id = client.id;
+
+      const animalsResponse = await (await animalDatabase).searchAnimalsByIdClient(Number(client_id));
+
+      const animals = animalsResponse.data.map(animal => ({
+        client_id: animal.client_id,
+        idAnimal: animal.idAnimal,
+        name: animal.name,
+      }));
+
+      for (const animal of animals) {
+        console.log(`Animal ID: ${animal.idAnimal}, Nome: ${animal.name}`);
+
+        // Consulta o orçamento para o animal atual
+        const budgetResponse = await (await budgetDatabase).searchBudgetByIdAnimal(animal.idAnimal);
+        const budgets = budgetResponse.data;
+
+        console.log(`Orçamentos para Animal ID ${animal.idAnimal}:`, budgets);
+
+        // Aqui você pode processar os orçamentos conforme necessário
+      }
+
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 
