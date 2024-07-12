@@ -5,13 +5,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import CurrencyFormatter from "./CurrencyFormatter";
 
 type Props = PressableProps & {
   data: {
     date: string;
     description: string;
-    value: string;
-    amountPaid: string;
+    value: number;
+    amountPaid: number;
   };
   onDelete: () => void;
 };

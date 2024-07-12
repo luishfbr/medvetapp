@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import {
   View,
-  Button,
   Alert,
-  StyleSheet,
   Text,
   FlatList,
-  ScrollView,
+  Pressable,
 } from "react-native";
 import { router } from "expo-router";
 
 import { Input } from "@/app/components/Input";
 import { Client } from "@/app/components/Client";
+
+import ConfirmationModal from "@/app/components/popups/ConfirmationModal";
+import DeleteModal from "@/app/components/popups/DeleteModal";
 
 import {
   ClientDatabase,
@@ -19,7 +20,7 @@ import {
 } from "@/database/useClientDatabase";
 import AppButton from "./components/Button";
 
-import styles from "@/app/styles/style"
+import styles from "@/app/styles/style";
 
 export default function Index() {
   const [id, setId] = useState("");
@@ -30,13 +31,12 @@ export default function Index() {
 
   const clientDatabase = useClientDatabase();
 
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<number | null>(null);
+
   async function create() {
     try {
-      if (!name || !owner) {
-        Alert.alert("É necessário inserir os dados")
-        return
-      }
-
       const response = await (
         await clientDatabase
       ).create({
@@ -57,8 +57,6 @@ export default function Index() {
         name,
         owner: owner,
       });
-
-      Alert.alert("Cliente atualizado!");
     } catch (error) {
       console.log(error);
     }
@@ -89,16 +87,51 @@ export default function Index() {
   }
 
   async function handleSave() {
+    if (!name || !owner) {
+      Alert.alert("É necessário inserir os dados");
+      return;
+    }
+
+    // Mostrar o modal de confirmação antes de salvar os dados
+    setConfirmModalVisible(true);
+  }
+
+  async function confirmCreateOrUpdate() {
     if (id) {
-      update();
+      await update();
     } else {
-      create();
+      await create();
     }
 
     setId("");
     setName("");
     setOwner("");
     await list();
+
+    // Fechar o modal após salvar os dados
+    setConfirmModalVisible(false);
+  }
+
+  function cancelCreateOrUpdate() {
+    // Apenas fechar o modal sem salvar os dados
+    setConfirmModalVisible(false);
+  }
+
+  function handleDeleteClient(id: number) {
+    // Mostrar o modal de delete antes de deletar o cliente
+    setClientToDelete(id);
+    setDeleteModalVisible(true);
+  }
+
+  async function confirmDelete() {
+    if (clientToDelete !== null) {
+      await remove(clientToDelete);
+    }
+    setDeleteModalVisible(false);
+  }
+
+  function cancelDelete() {
+    setDeleteModalVisible(false);
   }
 
   useEffect(() => {
@@ -111,14 +144,26 @@ export default function Index() {
     </View>
   );
 
-  const ListFooter = () => {
+  const ListFooter = () => (
     <View style={styles.listFooter}>
-        <Text></Text>
+      <Text></Text>
     </View>
-  }
+  );
 
   return (
     <View style={styles.main}>
+      <ConfirmationModal
+        visible={confirmModalVisible}
+        onConfirm={confirmCreateOrUpdate}
+        onCancel={cancelCreateOrUpdate}
+        message="Você deseja salvar o cliente?"
+      />
+      <DeleteModal
+        visible={deleteModalVisible}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        message="Você deseja excluir o cliente?"
+      />
       <View style={styles.header}>
         <Text style={styles.text_header}>Meus Clientes</Text>
       </View>
@@ -139,7 +184,9 @@ export default function Index() {
               onChangeText={setOwner}
               value={owner}
             ></Input>
-            <AppButton title="Salvar" onPress={handleSave}></AppButton>
+            <Pressable>
+              <AppButton title="Salvar" onPress={handleSave}></AppButton>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -166,12 +213,13 @@ export default function Index() {
               <Client
                 data={item}
                 onOpen={() => details(item)}
-                onDelete={() => remove(item.id)}
+                onDelete={() => handleDeleteClient(item.id)}
                 onPress={() => router.navigate("/details/" + item.id)}
               />
             )}
             style={styles.list}
             ListHeaderComponent={ListHeader}
+            ListFooterComponent={ListFooter}
           />
         </View>
       </View>

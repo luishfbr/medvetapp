@@ -28,12 +28,12 @@ export async function initializeDatabase(
 
     // Criação da tabela budget
     await database.execAsync(`
-      CREATE TABLE IF NOT EXISTS budget (
+        CREATE TABLE IF NOT EXISTS budget (
         idBudget INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL,
+        date DATETIME NOT NULL,
         description TEXT NOT NULL,
-        value TEXT NOT NULL,
-        amountPaid TEXT NOT NULL,
+        value REAL NOT NULL,
+        amountPaid REAL NOT NULL,
         animal_id INTEGER NOT NULL,
         FOREIGN KEY (animal_id) REFERENCES animals(idAnimal) ON DELETE CASCADE ON UPDATE CASCADE
       );

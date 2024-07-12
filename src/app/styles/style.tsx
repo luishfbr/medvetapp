@@ -129,7 +129,70 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 30,
     borderRadius: 10,
+    marginTop: 20,
   },
+
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+
+  modalView: {
+    margin: 20,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  button: {
+    borderRadius: 10,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    elevation: 2,
+  },
+
+  buttonOpen: {
+    backgroundColor: '#F194FF',
+  },
+
+  buttonClose: {
+    backgroundColor: 'red',
+  },
+
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 22
+  },
+
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 22
+  },
+
+  viewbuttonspopup: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 30,
+    marginTop: 20,
+  },
+
+  buttonConfirm: {
+    backgroundColor: 'green'
+  }
 });
 
 export default styles;

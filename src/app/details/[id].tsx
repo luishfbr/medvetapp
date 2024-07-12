@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { Alert, View, Text, FlatList, Pressable } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { Alert, View, Text, FlatList } from "react-native";
 
 import AppButton from "@/app/components/Button";
 import { Animal } from "@/app/components/Animal";
 import { Input } from "@/app/components/Input";
+
+import ConfirmationModal from "@/app/components/popups/ConfirmationModal";
+import DeleteModal from "@/app/components/popups/DeleteModal";
 
 import {
   AnimalDatabase,
@@ -23,9 +26,14 @@ export default function Details() {
   const [search, setSearch] = useState("");
 
   const { id } = useLocalSearchParams();
+  const client_id = { id };
   const clientDatabase = useClientDatabase();
   const animalDatabase = useAnimalDatabase();
   const router = useRouter();
+
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<number | null>(null);
 
   async function fetchClientDetails() {
     try {
@@ -36,13 +44,18 @@ export default function Details() {
     }
   }
 
+  async function createPdf() {
+    try {
+      // Assuming generatePdf is a method of clientDatabase or animalDatabase
+      const relatorioPdf = await (await clientDatabase).generatePdf(Number(id));
+      Alert.alert("PDF gerado com sucesso");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async function createAnimal() {
     try {
-      if (!name) {
-        Alert.alert("Insira o nome do animal");
-        return;
-      }
-
       const response = await (
         await animalDatabase
       ).createAnimal({
@@ -82,7 +95,7 @@ export default function Details() {
   async function removeAnimal(id: number) {
     try {
       await (await animalDatabase).removeAnimal(id);
-      await searchAnimal(); // Atualiza a lista de animais após a remoção
+      await searchAnimal();
     } catch (error) {
       console.log(error);
     }
@@ -94,6 +107,16 @@ export default function Details() {
   }
 
   async function handleSave() {
+    if (!name) {
+      Alert.alert("Insira o nome do animal");
+      return;
+    }
+
+    // Mostrar o modal de confirmação antes de salvar os dados
+    setConfirmModalVisible(true);
+  }
+
+  async function confirmCreateOrUpdate() {
     if (idAnimal) {
       await updateAnimal();
     } else {
@@ -103,6 +126,31 @@ export default function Details() {
     setId("");
     setName("");
     await searchAnimal();
+
+    // Fechar o modal após salvar os dados
+    setConfirmModalVisible(false);
+  }
+
+  function cancelCreateOrUpdate() {
+    // Apenas fechar o modal sem salvar os dados
+    setConfirmModalVisible(false);
+  }
+
+  function handleDeleteClient(idAnimal: number) {
+    // Mostrar o modal de delete antes de deletar o cliente
+    setClientToDelete(idAnimal);
+    setDeleteModalVisible(true);
+  }
+
+  async function confirmDelete() {
+    if (clientToDelete !== null) {
+      await removeAnimal(clientToDelete);
+    }
+    setDeleteModalVisible(false);
+  }
+
+  function cancelDelete() {
+    setDeleteModalVisible(false);
   }
 
   useEffect(() => {
@@ -119,9 +167,30 @@ export default function Details() {
     </View>
   );
 
+  const ListFooter = () => (
+    <View style={styles.listFooter}>
+      <Text></Text>
+    </View>
+  );
+
   return (
     <View style={styles.main}>
+      <ConfirmationModal
+        visible={confirmModalVisible}
+        onConfirm={confirmCreateOrUpdate}
+        onCancel={cancelCreateOrUpdate}
+        message="Você deseja salvar o animal?"
+      />
+      <DeleteModal
+        visible={deleteModalVisible}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        message="Você deseja excluir o animal?"
+      />
       <View style={styles.header}>
+        <Pressable>
+          <AppButton title="Gerar Relatório" onPress={createPdf}></AppButton>
+        </Pressable>
         <Text style={styles.text_header}>
           {client ? client.name : "Carregando..."}
         </Text>
@@ -136,7 +205,9 @@ export default function Details() {
               onChangeText={setName}
               value={name}
             />
-            <AppButton title="Salvar" onPress={handleSave}></AppButton>
+            <Pressable>
+              <AppButton title="Salvar" onPress={handleSave}></AppButton>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -163,12 +234,13 @@ export default function Details() {
               <Animal
                 data={item}
                 onOpen={() => animalsdetails(item)}
-                onDelete={() => removeAnimal(item.idAnimal)}
+                onDelete={() => handleDeleteClient(item.idAnimal)}
                 onPress={() => router.navigate("/budget/" + item.idAnimal)}
               />
             )}
             style={styles.list}
             ListHeaderComponent={ListHeader}
+            ListFooterComponent={ListFooter}
           />
         </View>
       </View>
