@@ -39,6 +39,7 @@
     "react-native-drop-shadow": "^1.0.0",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-masked-text": "^1.13.0",
+    "react-native-orientation-locker": "^1.7.0",
     "react-native-pdf": "^6.7.5",
     "react-native-pdf-lib": "^1.0.0",
     "react-native-reanimated": "~3.10.1",

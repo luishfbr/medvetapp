@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 35,
     borderWidth: 2,
     borderColor: "#D8D8D8",
-    backgroundColor: "#K5K5K5",
+    backgroundColor: "#F5F5F5", // Corrigido para uma cor hexadecimal válida
   },
 
   line: {
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "bold",
     padding: 6,
-    marginLeft: 50
+    marginLeft: 50,
   },
 
   listHeaderTextRight: {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "bold",
     padding: 6,
-    marginRight: 90
+    marginRight: 90,
   },
 
   listFooter: {
@@ -134,18 +134,18 @@ const styles = StyleSheet.create({
 
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 22,
   },
 
   modalView: {
     margin: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
     borderRadius: 10,
     padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -163,36 +163,49 @@ const styles = StyleSheet.create({
   },
 
   buttonOpen: {
-    backgroundColor: '#F194FF',
+    backgroundColor: "#F194FF",
   },
 
   buttonClose: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
   },
 
   textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: 22
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 22,
   },
 
   modalText: {
     marginBottom: 15,
-    textAlign: 'center',
-    fontSize: 22
+    textAlign: "center",
+    fontSize: 22,
   },
 
   viewbuttonspopup: {
-    display: 'flex',
-    flexDirection: 'row',
+    display: "flex",
+    flexDirection: "row",
     gap: 30,
     marginTop: 20,
   },
 
   buttonConfirm: {
-    backgroundColor: 'green'
-  }
+    backgroundColor: "green",
+  },
+
+  portraitContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+  landscapeContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
 });
 
 export default styles;

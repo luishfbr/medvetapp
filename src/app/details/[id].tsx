@@ -11,15 +11,14 @@ import DeleteModal from "@/app/components/popups/DeleteModal";
 
 import {
   AnimalDatabase,
-  BudgetDatabase,
   ClientDatabase,
   useAnimalDatabase,
   useBudgetDatabase,
   useClientDatabase,
 } from "@/database/useClientDatabase";
 
-import { printToFileAsync } from "expo-print"
-import { shareAsync } from 'expo-sharing'
+import { printToFileAsync } from "expo-print";
+import { shareAsync } from "expo-sharing";
 
 import styles from "@/app/styles/style";
 
@@ -41,12 +40,10 @@ export default function Details() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<number | null>(null);
 
-
-
   async function fetchClientDetails() {
     try {
       const clientDetails = await (await clientDatabase).show(Number(id));
-      setClient(clientDetails); // Atualiza o estado com os detalhes do cliente
+      setClient(clientDetails);
     } catch (error) {
       console.log(error);
     }
@@ -62,26 +59,96 @@ export default function Details() {
 
       const client_id = client.id;
 
-      const animalsResponse = await (await animalDatabase).searchAnimalsByIdClient(Number(client_id));
+      const animalsResponse = await (
+        await animalDatabase
+      ).searchAnimalsByIdClient(Number(client_id));
 
-      const animals = animalsResponse.data.map(animal => ({
+      const animals = animalsResponse.data.map((animal) => ({
         client_id: animal.client_id,
         idAnimal: animal.idAnimal,
         name: animal.name,
       }));
 
+      let html = `
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            h1 { text-align: center; }
+            .client-info, .animal-info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório do Cliente</h1>
+          <div class="client-info">
+            <h2>Informações do Cliente</h2>
+            <p><strong>Nome:</strong> ${client.name}</p>
+            <p><strong>Proprietário:</strong> ${client.owner}</p>
+          </div>
+      `;
+
       for (const animal of animals) {
-        console.log(`Animal ID: ${animal.idAnimal}, Nome: ${animal.name}`);
+        const budgetResponse = await (
+          await budgetDatabase
+        ).searchBudgetByIdAnimal(animal.idAnimal);
+        const budgets = budgetResponse.data.map((budget) => ({
+          date: budget.date,
+          description: budget.description,
+          value: budget.value,
+          amountPaid: budget.amountPaid,
+        }));
 
-        // Consulta o orçamento para o animal atual
-        const budgetResponse = await (await budgetDatabase).searchBudgetByIdAnimal(animal.idAnimal);
-        const budgets = budgetResponse.data;
+        const totalAmountPaid = budgetResponse.totalAmountPaid;
+        const totalValue = budgetResponse.totalValue;
 
-        console.log(`Orçamentos para Animal ID ${animal.idAnimal}:`, budgets);
+        html += `
+          <div class="animal-info">
+            <h1>Animal: ${animal.name}</h1>
+            <table>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Valor Pago</th>
+              </tr>
+        `;
 
-        // Aqui você pode processar os orçamentos conforme necessário
+        for (const budget of budgets) {
+          html += `
+            <tr>
+              <td>${budget.date}</td>
+              <td>${budget.description}</td>
+              <td>${budget.value}</td>
+              <td>${budget.amountPaid}</td>
+            </tr>
+          `;
+        }
+
+        html += `
+            <tr>
+              <td colspan="2"><strong>Total</strong></td>
+              <td><strong>${totalValue}</strong></td>
+              <td><strong>${totalAmountPaid}</strong></td>
+            </tr>
+            </table>
+          </div>
+        `;
       }
 
+      html += `
+          </body>
+        </html>
+      `;
+
+      const file = await printToFileAsync({
+        html: html,
+        base64: false,
+      });
+
+      await shareAsync(file.uri);
     } catch (error) {
       throw error;
     }
@@ -144,8 +211,6 @@ export default function Details() {
       Alert.alert("Insira o nome do animal");
       return;
     }
-
-    // Mostrar o modal de confirmação antes de salvar os dados
     setConfirmModalVisible(true);
   }
 
@@ -159,18 +224,14 @@ export default function Details() {
     setId("");
     setName("");
     await searchAnimal();
-
-    // Fechar o modal após salvar os dados
     setConfirmModalVisible(false);
   }
 
   function cancelCreateOrUpdate() {
-    // Apenas fechar o modal sem salvar os dados
     setConfirmModalVisible(false);
   }
 
   function handleDeleteClient(idAnimal: number) {
-    // Mostrar o modal de delete antes de deletar o cliente
     setClientToDelete(idAnimal);
     setDeleteModalVisible(true);
   }
@@ -221,12 +282,12 @@ export default function Details() {
         message="Você deseja excluir o animal?"
       />
       <View style={styles.header}>
-        <Pressable>
-          <AppButton title="Gerar Relatório" onPress={createPdf}></AppButton>
-        </Pressable>
         <Text style={styles.text_header}>
           {client ? client.name : "Carregando..."}
         </Text>
+        <Pressable>
+          <AppButton title="Gerar Relatório" onPress={createPdf}></AppButton>
+        </Pressable>
       </View>
       <View style={styles.divform}>
         <View style={styles.form}>

@@ -102,13 +102,19 @@ export async function useClientDatabase() {
   async function getAnimalsAndBudgets(id: number) {
     try {
       const queryAnimal = "SELECT * FROM animals WHERE client_id = ?";
-      const responseAnimal = await database.getAllAsync<AnimalDatabase>(queryAnimal, id);
+      const responseAnimal = await database.getAllAsync<AnimalDatabase>(
+        queryAnimal,
+        id
+      );
 
       const queryClient = "SELECT * FROM clients WHERE id = ?";
-      const reponseClient = await database.getAllAsync<ClientDatabase>(queryClient, id);
+      const reponseClient = await database.getAllAsync<ClientDatabase>(
+        queryClient,
+        id
+      );
 
-      console.log(queryAnimal)
-      console.log(queryClient)
+      console.log(queryAnimal);
+      console.log(queryClient);
 
       if (responseAnimal) {
         for (const animal of responseAnimal) {
@@ -118,9 +124,9 @@ export async function useClientDatabase() {
             animal.idAnimal
           );
 
-          console.log(budgetResponse)
+          console.log(budgetResponse);
 
-          return ({ responseAnimal, budgetResponse, reponseClient })
+          return { responseAnimal, budgetResponse, reponseClient };
         }
       }
     } catch (error) {
@@ -215,7 +221,7 @@ export async function useAnimalDatabase() {
       const response = await database.getAllAsync<AnimalDatabase>(
         query,
         client_id
-      )
+      );
 
       const detailsWithIndex = {
         data: response.map((animal) => ({
@@ -227,7 +233,7 @@ export async function useAnimalDatabase() {
 
       return detailsWithIndex;
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
@@ -237,7 +243,7 @@ export async function useAnimalDatabase() {
     updateAnimal,
     removeAnimal,
     showAnimals,
-    searchAnimalsByIdClient
+    searchAnimalsByIdClient,
   };
 }
 
@@ -331,24 +337,37 @@ export async function useBudgetDatabase() {
 
   async function searchBudgetByIdAnimal(animal_id: number) {
     try {
+      const queryAnimal = "SELECT * FROM animals WHERE idAnimal = ?";
+      const responseAnimal = await database.getFirstAsync<AnimalDatabase>(
+        queryAnimal,
+        animal_id
+      );
+
       const query = "SELECT * FROM budget WHERE animal_id = ?";
       const response = await database.getAllAsync<BudgetDatabase>(
         query,
         animal_id
-      )
+      );
 
-      const detailsWithIndex = {
-        data: response.map((budget) => ({
-          date: budget.date,
-          description: budget.description,
-          value: budget.value,
-          amountPaid: budget.amountPaid,
-        })),
+      const totalAmountPaid = response.reduce(
+        (acc, budget) => acc + budget.amountPaid,
+        0
+      );
+      const totalValue = response.reduce(
+        (acc, budget) => acc + budget.value,
+        0
+      );
+
+      const detailsBudgetWithIndex = {
+        data: response,
+        totalAmountPaid,
+        totalValue,
+        animalName: responseAnimal ? responseAnimal.name : null,
       };
 
-      return detailsWithIndex;
+      return detailsBudgetWithIndex;
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
@@ -358,6 +377,6 @@ export async function useBudgetDatabase() {
     removeBudget,
     showBudget,
     searchBudgetByDescription,
-    searchBudgetByIdAnimal
+    searchBudgetByIdAnimal,
   };
 }

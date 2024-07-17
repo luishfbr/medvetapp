@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  View,
-  Alert,
-  Text,
-  FlatList,
-  Pressable,
-} from "react-native";
+import { View, Alert, Text, FlatList, Pressable } from "react-native";
 import { router } from "expo-router";
 
 import { Input } from "@/app/components/Input";
@@ -92,7 +86,6 @@ export default function Index() {
       return;
     }
 
-    // Mostrar o modal de confirmação antes de salvar os dados
     setConfirmModalVisible(true);
   }
 
@@ -108,17 +101,14 @@ export default function Index() {
     setOwner("");
     await list();
 
-    // Fechar o modal após salvar os dados
     setConfirmModalVisible(false);
   }
 
   function cancelCreateOrUpdate() {
-    // Apenas fechar o modal sem salvar os dados
     setConfirmModalVisible(false);
   }
 
   function handleDeleteClient(id: number) {
-    // Mostrar o modal de delete antes de deletar o cliente
     setClientToDelete(id);
     setDeleteModalVisible(true);
   }

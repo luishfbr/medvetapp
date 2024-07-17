@@ -55,8 +55,10 @@ export default function Budget() {
       ).createBudget({
         date,
         description,
-        value: parseFloat(value.replace(/[^\d,-]/g, '').replace(',', '.')),
-        amountPaid: parseFloat(amountPaid.replace(/[^\d,-]/g, '').replace(',', '.')),
+        value: parseFloat(value.replace(/[^\d,-]/g, "").replace(",", ".")),
+        amountPaid: parseFloat(
+          amountPaid.replace(/[^\d,-]/g, "").replace(",", ".")
+        ),
         animal_id: Number(idAnimal),
       });
       await searchBudget();
@@ -73,8 +75,10 @@ export default function Budget() {
         idBudget: Number(idBudget),
         date,
         description,
-        value: parseFloat(value.replace(/[^\d,-]/g, '').replace(',', '.')),
-        amountPaid: parseFloat(amountPaid.replace(/[^\d,-]/g, '').replace(',', '.')),
+        value: parseFloat(value.replace(/[^\d,-]/g, "").replace(",", ".")),
+        amountPaid: parseFloat(
+          amountPaid.replace(/[^\d,-]/g, "").replace(",", ".")
+        ),
         animal_id: Number(idAnimal),
       });
       await searchBudget();
@@ -107,8 +111,8 @@ export default function Budget() {
     setIdBudget(String(item.idBudget));
     setDate(item.date);
     setDescription(item.description);
-    setValue(item.value.toFixed(2).replace('.', ',')); // Formatar o valor para exibição
-    setAmountPaid(item.amountPaid.toFixed(2).replace('.', ',')); // Formatar o valor pago para exibição
+    setValue(item.value.toFixed(2).replace(".", ","));
+    setAmountPaid(item.amountPaid.toFixed(2).replace(".", ","));
   }
 
   async function handleSave() {
@@ -117,7 +121,6 @@ export default function Budget() {
       return;
     }
 
-    // Mostrar o modal de confirmação antes de salvar os dados
     setConfirmModalVisible(true);
   }
 
@@ -135,17 +138,14 @@ export default function Budget() {
     setAmountPaid("");
     await searchBudget();
 
-    // Fechar o modal após salvar os dados
     setConfirmModalVisible(false);
   }
 
   function cancelCreateOrUpdate() {
-    // Apenas fechar o modal sem salvar os dados
     setConfirmModalVisible(false);
   }
 
   function handleDeleteClient(idBudget: number) {
-    // Mostrar o modal de delete antes de deletar o cliente
     setClientToDelete(idBudget);
     setDeleteModalVisible(true);
   }
